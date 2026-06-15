@@ -1,6 +1,8 @@
-# NFS-ModscriptViewer
-
+# NFS-ModscriptViewer `Beta`
 A lightweight text viewer and editor for Need for Speed modscripts.
+
+## Disclaimer
+> This tool is currently in **Beta**. The core features are stable and fully operational, but some minor features—like advanced syntax highlighting rules—are still actively being worked on.
 
 ## Overview
 This tool provides syntax highlighting and editing capabilities for `.nfsms` (Attribulator) and `.end` (Binary) scripts, making modscript analysis and modification easier.
