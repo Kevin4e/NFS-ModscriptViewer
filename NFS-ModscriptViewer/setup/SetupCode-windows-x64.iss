@@ -36,7 +36,7 @@ DisableProgramGroupPage=yes
 
 LicenseFile=C:\Users\Kevin\source\repos\NFS-ModscriptViewer\LICENSE
 
-OutputBaseFilename=NFS-ModscriptViewer-windows-x64-installer
+OutputBaseFilename=NFS-ModscriptViewer_v{#MyAppVersion}_win-x64_setup
 OutputDir=C:\Users\Kevin\source\repos\NFS-ModscriptViewer\NFS-ModscriptViewer\setup\output
 SolidCompression=yes
 WizardStyle=modern

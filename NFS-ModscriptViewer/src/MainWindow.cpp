@@ -20,7 +20,8 @@ static constexpr const char* FILE_FILTER{ "NFS Modscripts (*.nfsms *.end);;All F
 // --- private fields --- //
 
 const QString MainWindow::APP_NAME{ "NFS-ModscriptViewer" };
-const QString MainWindow::APP_DISPLAY_NAME{ APP_NAME + ' ' + APP_VERSION };
+
+const QString MainWindow::APP_DISPLAY_NAME{ APP_NAME + " v" + APP_VERSION };
 
 // constructor / destructor
 MainWindow::MainWindow(QWidget* parent)
