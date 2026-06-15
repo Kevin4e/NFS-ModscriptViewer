@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTextEdit" name="textEdit">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>240</y>
+      <width>104</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Consolas</family>
+      <pointsize>12</pointsize>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="lineWrapMode">
+     <enum>QTextEdit::LineWrapMode::NoWrap</enum>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_as"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuLanguage">
+    <property name="title">
+     <string>Language</string>
+    </property>
+    <addaction name="actionAttribulator"/>
+    <addaction name="actionBinary"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionSupport"/>
+   </widget>
+   <widget class="QMenu" name="menuLine_Spacing">
+    <property name="title">
+     <string>Line Spacing</string>
+    </property>
+    <addaction name="actionIncrease"/>
+    <addaction name="actionDecrease"/>
+    <addaction name="actionSet_Spacing"/>
+   </widget>
+   <widget class="QMenu" name="menuOther">
+    <property name="title">
+     <string>Other</string>
+    </property>
+    <widget class="QMenu" name="menuTask_Killer">
+     <property name="title">
+      <string>Task Killer</string>
+     </property>
+     <addaction name="actionSpeedDotExe"/>
+     <addaction name="actionNFSCDotExe"/>
+     <addaction name="actionProstreet"/>
+     <addaction name="actionNFSDotExe"/>
+    </widget>
+    <addaction name="menuTask_Killer"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuLanguage"/>
+   <addaction name="menuLine_Spacing"/>
+   <addaction name="menuHelp"/>
+   <addaction name="menuOther"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
+   </property>
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionAttribulator">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/icons/ogvilogo.png</normaloff>:/icons/ogvilogo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Attribulator</string>
+   </property>
+  </action>
+  <action name="actionBinary">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/icons/binarylogo.png</normaloff>:/icons/binarylogo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Binary</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionSupport">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::HelpFaq"/>
+   </property>
+   <property name="text">
+    <string>Support</string>
+   </property>
+  </action>
+  <action name="actionIncrease">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ListAdd"/>
+   </property>
+   <property name="text">
+    <string>Increase</string>
+   </property>
+  </action>
+  <action name="actionDecrease">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ListRemove"/>
+   </property>
+   <property name="text">
+    <string>Decrease</string>
+   </property>
+  </action>
+  <action name="actionSet_Spacing">
+   <property name="text">
+    <string>Set Spacing</string>
+   </property>
+  </action>
+  <action name="actionRun">
+   <property name="text">
+    <string>Run</string>
+   </property>
+  </action>
+  <action name="actionSpeedDotExe">
+   <property name="text">
+    <string>speed.exe (MW05)</string>
+   </property>
+  </action>
+  <action name="actionNFSCDotExe">
+   <property name="text">
+    <string>NFSC.exe (Carbon)</string>
+   </property>
+  </action>
+  <action name="actionProstreet">
+   <property name="text">
+    <string>Prostreet</string>
+   </property>
+  </action>
+  <action name="actionNFSDotExe">
+   <property name="text">
+    <string>nfs.exe (Undercover)</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>binarylogo.png</file>
+        <file>ogvilogo.png</file>
+    </qresource>
+</RCC>
