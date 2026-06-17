@@ -79,26 +79,10 @@
     <addaction name="actionDecrease"/>
     <addaction name="actionSet_Spacing"/>
    </widget>
-   <widget class="QMenu" name="menuOther">
-    <property name="title">
-     <string>Other</string>
-    </property>
-    <widget class="QMenu" name="menuTask_Killer">
-     <property name="title">
-      <string>Task Killer</string>
-     </property>
-     <addaction name="actionSpeedDotExe"/>
-     <addaction name="actionNFSCDotExe"/>
-     <addaction name="actionProstreet"/>
-     <addaction name="actionNFSDotExe"/>
-    </widget>
-    <addaction name="menuTask_Killer"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuLanguage"/>
    <addaction name="menuLine_Spacing"/>
    <addaction name="menuHelp"/>
-   <addaction name="menuOther"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">

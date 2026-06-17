@@ -1,20 +1,23 @@
 #include "Highlighter.hpp"
 
+#include "Aliases.hpp"
 #include "ColorFormats.hpp"
+#include "Utils.hpp"
 
 #include <QColor>
-#include <QMap>
-#include <QRegularExpression>
 #include <QString>
-#include <QStringlist>
+#include <QStringList>
 #include <QTextEdit>
 #include <qtypes.h>
 #include <QVector>
 
 Highlighter::Highlighter(QTextEdit* editor, Language language)
     : QSyntaxHighlighter{ editor->document() }, currentLanguage{ language }, editor{ editor }
+{}
+
+Highlighter::Language Highlighter::getLanguage() const noexcept
 {
-    setLanguage(language);
+    return currentLanguage;
 }
 
 void Highlighter::setLanguage(Language language) noexcept
@@ -23,124 +26,162 @@ void Highlighter::setLanguage(Language language) noexcept
     rehighlight();
 }
 
-Highlighter::Language Highlighter::getLanguage() const noexcept
-{
-    return currentLanguage;
-}
-
-void Highlighter::setColors(const QString& text, const QStringList& words, const QVector<QColor>& colors) noexcept
+void Highlighter::setColors(const QString& text, const QStringList& tokens, const QColorList& colors) noexcept
 {
     qsizetype pos{0};
 
-    for (qsizetype i{0}; i < words.size(); ++i)
+    for (qsizetype i{0}; i < tokens.size(); ++i)
     {
-        const qsizetype index{ text.indexOf(words[i], pos) };
+        const QString& token{ tokens[i] };
+
+        const qsizetype index{ text.indexOf(token, pos) };
+
+        const qsizetype tokenLength{ token.length() };
 
         if (i < colors.size())
-            setFormat(index, words[i].length(), colors[i]);
+            setFormat(index, tokenLength, colors[i]);
 
-        pos = index + words[i].length();
+        pos = index + tokenLength;
     }
 }
 
 void Highlighter::highlightBlock(const QString& text)
 {
     if (text.isEmpty())
-        return;
+        return; // Empty text
 
     const qsizetype textLength{ text.length() };
-    setFormat(0, textLength, 0xFFFFFF); // Make the whole text initially white 
 
-    // Split text without comments in words
-    const QStringList words{ text.split(QRegularExpression("\\s+")) };
-    const qsizetype wordsSize{ words.size() };
+    setFormat(0, textLength, 0xFFFFFF); // Make the whole text initially white
 
-    const QString command{ words.first() }; // Get the first word of the line (command)
+    const QStringList tokens{ splitCommandLine(text) }; // Split text in tokens
 
-    // Attribulator v2.0 rules
-    if (currentLanguage == Language::Attribulator) {
-        if (text.front() == '#')
-            setFormat(0, textLength, Others::CommentFormat);
+    if (tokens.isEmpty())
+        return; // No tokens were found
 
-        else if (command == "update_field") {
-            if (wordsSize >= 7 && !words[6].isEmpty()) {
+    const qsizetype tokenCount{ tokens.size() };
 
-                setColors(text, words,
-                        {
-                            Attrib::Cmd::Field,
-                            Attrib::Arg::Class,
-                            Attrib::Arg::Node,
-                            Attrib::Arg::Field,
-                            Attrib::Arg::SubFields,
-                            Attrib::Arg::SubFields,
-                            Attrib::Arg::Value
-                        }
-                );
+    const QString& command{ tokens.first() }; // Get the first token of the line (command)
+
+    switch (currentLanguage)
+    {
+        // Attribulator v2.0 rules
+        case Language::Attribulator:
+        {
+            if (text.trimmed().startsWith('#')) {
+                setFormat(0, textLength, Shared::CommentFormat); // Comment marker was found, highlight the whole line
+                return;
             }
-            else if (wordsSize >= 6 && !words[5].isEmpty()) {
-                setColors(text, words,
-                        {
-                            Attrib::Cmd::Field,
-                            Attrib::Arg::Class,
-                            Attrib::Arg::Node,
-                            Attrib::Arg::Field,
-                            Attrib::Arg::SubFields,
-                            Attrib::Arg::Value
-                        }
-                );
-            }
-            else {
-                setColors(text, words,
-                        {
-                            Attrib::Cmd::Field,
-                            Attrib::Arg::Class,
-                            Attrib::Arg::Node,
-                            Attrib::Arg::Field,
-                            Attrib::Arg::Value
-                        }
-                );
-            }
-        }
-        else {
+
             const auto commandIt{ Attrib::rules.find(command) };
 
-            if (commandIt != Attrib::rules.end())
-                setColors(text, words, commandIt->colors()); // Command was found, highlight
-        }
-    }
+            if (commandIt == Attrib::rules.end())
+                return; // Command not found
 
-    // Binary rules
-    else {
-        const qsizetype commandLength{ command.length() };
+            QColorList colors{ commandIt->colors() };
 
-        if (commandLength >= 2 && command[0] == '/' && command[1] == '/')
-            setFormat(0, textLength, Others::CommentFormat);
-
-        const auto commandIt{ Bin::rules.find(command) };
-
-        if (commandIt != Bin::rules.end()) {
-            bool highlightCommand{ false };
-            bool highlightAll{ true };
-
-            if (command == "bind_textures") {
-                if (words.size() <= 1) {
-                    highlightCommand = true;
-                    highlightAll = false;
-                }
-                else {
-                    const QString& type{ words[1] };
-
-                    if (type == "negate" || type == "override" || type == "synchronize")
-                        highlightAll = true;
-                    else
-                        highlightCommand = true;
-                }
+            if (command == "update_field") {
+                if (tokenCount >= 7)
+                    colors.append({ Attrib::Arg::SubField, Attrib::Arg::SubField, Attrib::Arg::Value });
+                else if (tokenCount >= 6)
+                    colors.append({ Attrib::Arg::SubField, Attrib::Arg::Value });
+                else
+                    colors.append( Attrib::Arg::Value);
             }
 
-            if (highlightCommand)
-                setColors(text, words, { commandIt->cmdColor });
-            else if (highlightAll)
-                setColors(text, words, commandIt->colors());
+            setColors(text, tokens, colors); // Command was found, highlight
+
+            break;
+        }
+
+        // Binary rules
+        case Language::Binary:
+        {
+            /* String Literal Highlighting */
+
+            qsizetype pos{0};
+
+            while ((pos = text.indexOf('"', pos)) != -1) {
+                const qsizetype firstQuotationMark{ pos };
+
+                if (firstQuotationMark == -1)
+                    break;
+
+                const qsizetype secondQuotationMark{ text.indexOf('"', firstQuotationMark + 1) };
+
+                if (secondQuotationMark == -1)
+                    break;
+
+                setFormat(firstQuotationMark, secondQuotationMark - firstQuotationMark + 1, Shared::String);
+                pos = secondQuotationMark + 1;
+            }
+
+            /* Comment Highlighting */
+
+            const qsizetype commentIndex{ text.indexOf("//") };
+
+            if (commentIndex != -1)
+                setFormat(commentIndex, text.length(), { Shared::CommentFormat }); // Comment marker was found, highlight the whole line from where the comment starts
+
+            /* Commands Highlighting */
+
+            const auto commandIt{ Bin::rules.find(command) };
+
+            if (commandIt == Bin::rules.end())
+                return;
+
+            QColorList colors;
+
+            if (command == "bind_textures") {
+                colors.append(commandIt->cmdColor);
+
+                if (tokenCount > 1) {
+                    const QString& type{ tokens[1] };
+
+                    if (type == "negate" || type == "override" || type == "synchronize")
+                        colors.append(commandIt->argColors);
+                }
+            }
+            else if (command == "combobox") {
+                colors = { commandIt->cmdColor };
+
+                for (qsizetype i{1}; i < tokenCount - 1; ++i)
+                    colors.append(Bin::Arg::Option);
+
+                colors.append(Bin::Arg::Description);
+            }
+            else if (command == "if") { // WIP
+                colors.append(commandIt->cmdColor);
+
+                if (tokenCount > 1) {
+                    const QString& condition{ tokens[1] };
+
+                    if (condition == "collection_exists") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                    else if (condition == "string_exists") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                    else if (condition == "texture_exists") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                    else if (condition == "file_exists") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                    else if (condition == "directory_exists") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                    else if (condition == "collection_value_equals") {
+                        colors.append({ Bin::Arg::Condition });
+                    }
+                }
+            }
+            else
+                colors.append(commandIt->colors());
+
+            setColors(text, tokens, colors);
+
+            break;
         }
     }
 }

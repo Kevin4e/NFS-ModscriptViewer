@@ -1,9 +1,7 @@
 #pragma once
 
-#include <QMessageBox>
 #include <QString>
+#include <QStringList>
 
-class QWidget;
-
-bool isFileModified(const QString& currentText, const QString& filePath, QWidget* parent);
-QMessageBox::StandardButton ProceedWithUnsavedChangesUserChoice(QWidget* parent);
+// Splits a command line into tokens while preserving quoted arguments
+QStringList splitCommandLine(const QString& command);

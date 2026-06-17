@@ -11,9 +11,9 @@ class SupportDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SupportDialog(QWidget *parent = nullptr);
+    explicit SupportDialog(QWidget* parent = nullptr);
     ~SupportDialog();
 
 private:
-    Ui::SupportDialog *ui;
+    Ui::SupportDialog* ui;
 };

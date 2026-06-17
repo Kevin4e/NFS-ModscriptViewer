@@ -1,8 +1,6 @@
 #include "MainWindow.hpp"
 
 #include <QApplication>
-#include <QIcon>
-#include <QLabel>
 
 int main(int argc, char *argv[])
 {

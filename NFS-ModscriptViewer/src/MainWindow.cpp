@@ -3,13 +3,13 @@
 #include "AboutDialog.hpp"
 #include "Highlighter.hpp"
 #include "SupportDialog.hpp"
-#include "Utils.hpp"
 #include "version.hpp"
 
 #include <QFile>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QKeySequence>
+#include <QMessageBox>
 #include <QProcess>
 #include <QTextEdit>
 
@@ -23,9 +23,8 @@ const QString MainWindow::APP_NAME{ "NFS-ModscriptViewer" };
 
 const QString MainWindow::APP_DISPLAY_NAME{ APP_NAME + " v" + APP_VERSION };
 
-// constructor / destructor
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow{parent}, ui{new Ui::MainWindow}
+    : QMainWindow{ parent }, ui{ new Ui::MainWindow }
 {
     ui->setupUi(this);
 
@@ -46,21 +45,24 @@ MainWindow::~MainWindow() noexcept
 }
 
 // --- public methods --- //
+
 void MainWindow::loadFile(const QString& filePath)
 {
-    QFile file(filePath);
+    QFile file{ filePath };
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
     currentFilePath = filePath;
 
+    savedContent = QString::fromUtf8(file.readAll());
+
+    ui->textEdit->setPlainText(savedContent);
+
     updateTitle();
 
-    ui->textEdit->setPlainText(QString::fromUtf8(file.readAll()));
-
-    QFileInfo info(filePath);
-    QString extension = info.suffix(); // without the dot
+    QFileInfo info{ filePath };
+    const QString extension{ info.suffix() }; // without the dot
 
     if (extension == "nfsms")
         setAttribulator();
@@ -77,36 +79,39 @@ void MainWindow::writeTextToFile(const QString& filePath)
     file.write(ui->textEdit->toPlainText().toUtf8());
 }
 
-Highlighter* MainWindow::getHighlighter() const noexcept
-{
-    return highlighter;
-}
-
 // --- protected methods --- //
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     if (ui->textEdit->toPlainText().isEmpty()) {
-        event->accept(); // Close if no text
-        return;
+        event->accept();
+        return; // Close if no text
     }
 
-    if (!isFileModified(ui->textEdit->toPlainText(), currentFilePath, this)) {
-        event->accept(); // Close if saved
-        return;
+    if (!isCurrentFileModified()) {
+        event->accept();
+        return; // Close if saved
     }
 
-    const QMessageBox::StandardButton reply{ ProceedWithUnsavedChangesUserChoice(this) };
+    const QMessageBox::StandardButton reply
+    {
+        QMessageBox::question
+        (
+            this,
+            "Unsaved changes",
+            "There are unsaved changes. Are you sure you want to proceed?",
+            QMessageBox::Yes | QMessageBox::No
+        )
+    };
 
     if (reply == QMessageBox::Yes)
-        event->accept(); // Close the window
+        event->accept(); // User chose "Yes", close the window
     else
         event->ignore(); // User chose "No", don't close
 }
 
 // --- private slots methods --- //
 
-// Creates an open file dialog, then triggers the file loader
 void MainWindow::openFile()
 {
     const QString filePath
@@ -125,19 +130,17 @@ void MainWindow::openFile()
     loadFile(filePath);
 }
 
-// Attempts to save the file.
-// If no file is opened, it triggers saveFileAs();
-// otherwise, it writes the text to the current file
 void MainWindow::saveFile()
 {
     if (currentFilePath.isEmpty())
         saveFileAs();
-    else
+    else {
         writeTextToFile(currentFilePath);
+        savedContent = ui->textEdit->toPlainText();
+        updateTitle();
+    }
 }
 
-// Prompts the user for a new file path,
-// updates the current file state, and writes the text
 void MainWindow::saveFileAs()
 {
     const QString filePath
@@ -155,24 +158,21 @@ void MainWindow::saveFileAs()
 
     currentFilePath = filePath;
 
-    updateTitle();
-
     writeTextToFile(currentFilePath);
+
+    updateTitle();
 }
 
-// Sets the language to Attribulator
 void MainWindow::setAttribulator() noexcept
 {
     highlighter->setLanguage(Highlighter::Language::Attribulator);
 }
 
-// Sets the language to Binary
 void MainWindow::setBinary() noexcept
 {
     highlighter->setLanguage(Highlighter::Language::Binary);
 }
 
-// Increases line spacing by the specified value
 void MainWindow::increaseLineSpacing() noexcept
 {
     if (lineSpacingValue == maxLineSpacingValue)
@@ -203,9 +203,6 @@ void MainWindow::setCustomLineSpacing()
     dialog.setDoubleDecimals(1);
     dialog.setDoubleValue(lineSpacingValue);
 
-    // Cambia l'icona qui
-    dialog.setWindowIcon(QIcon{ ":/icons/spacing.png" });
-
     if (dialog.exec() == QDialog::Accepted) {
         lineSpacingValue = dialog.doubleValue();
         applyLineSpacing();
@@ -224,33 +221,6 @@ void MainWindow::showSupportDialog()
     supportDialog.exec();
 }
 
-void MainWindow::killProcess(const QString& exeName) const noexcept
-{
-    QString cmd;
-    #ifdef Q_OS_WIN
-        cmd = QString("taskkill /IM %1 /F").arg(exeName);
-    #else
-        cmd = QString("killall -9 %1").arg(exeName);
-    #endif
-
-    QProcess::startDetached(cmd);
-}
-
-void MainWindow::exit() noexcept
-{
-    close(); // Call the close function.
-}
-
-void MainWindow::applyLineSpacing() const noexcept
-{
-    QTextBlockFormat format;
-    format.setLineHeight(lineSpacingValue, QTextBlockFormat::FixedHeight);
-
-    QTextCursor cursor(ui->textEdit->document());
-    cursor.select(QTextCursor::Document);
-    cursor.setBlockFormat(format);
-}
-
 void MainWindow::updateLineNumbers() noexcept
 {
     linesCount = ui->textEdit->document()->blockCount();
@@ -258,6 +228,7 @@ void MainWindow::updateLineNumbers() noexcept
 }
 
 // --- private methods --- //
+
 void MainWindow::setupUi()
 {
     setStyleSheet(R"(
@@ -273,7 +244,7 @@ void MainWindow::setupConnections()
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
     connect(ui->actionSave_as, &QAction::triggered, this, &MainWindow::saveFileAs);
-    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
 
     connect(ui->actionAttribulator, &QAction::triggered, this, &MainWindow::setAttribulator);
     connect(ui->actionBinary, &QAction::triggered, this, &MainWindow::setBinary);
@@ -295,6 +266,9 @@ void MainWindow::setupConnections()
 
     connect(ui->actionNFSDotExe, &QAction::triggered,
             this, [this] { killProcess("NFS.exe"); });
+
+    connect(ui->textEdit, &QTextEdit::textChanged,
+            this, [this] { updateTitle(); });
 }
 
 void MainWindow::setupShortcuts()
@@ -310,6 +284,40 @@ void MainWindow::updateTitle()
 {
     if (currentFilePath.isEmpty())
         setWindowTitle(APP_DISPLAY_NAME);
-    else
-        setWindowTitle(APP_DISPLAY_NAME + " | " + currentFilePath);
+    else {
+        if (isCurrentFileModified())
+            setWindowTitle(APP_DISPLAY_NAME + " | *" +  currentFilePath);
+        else
+            setWindowTitle(APP_DISPLAY_NAME + " | " +  currentFilePath);
+    }
+}
+
+void MainWindow::killProcess(const QString& exeName) const noexcept
+{
+    QString cmd;
+
+    #ifdef Q_OS_WIN // Windows
+        cmd = QString("taskkill /IM %1 /F").arg(exeName);
+
+    #else // Linux & macOS
+        cmd = QString("killall -9 %1").arg(exeName);
+
+    #endif
+
+    QProcess::startDetached(cmd);
+}
+
+bool MainWindow::isCurrentFileModified() const noexcept
+{
+    return savedContent != ui->textEdit->toPlainText();
+}
+
+void MainWindow::applyLineSpacing() const noexcept
+{
+    QTextBlockFormat format;
+    format.setLineHeight(lineSpacingValue, QTextBlockFormat::FixedHeight);
+
+    QTextCursor cursor(ui->textEdit->document());
+    cursor.select(QTextCursor::Document);
+    cursor.setBlockFormat(format);
 }

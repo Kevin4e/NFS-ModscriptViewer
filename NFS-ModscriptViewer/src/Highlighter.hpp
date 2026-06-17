@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Aliases.hpp"
+
 #include <QString>
 #include <QStringList>
 #include <QSyntaxHighlighter>
@@ -9,7 +11,8 @@
 
 class QTextEdit;
 
-class Highlighter : public QSyntaxHighlighter {
+class Highlighter : public QSyntaxHighlighter
+{
     Q_OBJECT
 
 public:
@@ -18,18 +21,25 @@ public:
         Binary
     };
 
-private:
-    void setColors(const QString& text, const QStringList& words, const QVector<QColor>& colors) noexcept;
+    Highlighter(QTextEdit* editor, Language language = Language::Attribulator); // Set "Attribulator" to default language
 
-    Language currentLanguage;
-    QTextEdit* editor;
+    // Returns the current language
+    Language getLanguage() const noexcept;
+
+    // Sets the current language
+    void setLanguage(Language language) noexcept;
 
 protected:
+    // Applies language-specific syntax highlighting to a single text block
     void highlightBlock(const QString& text) override;
 
-public:
-    Highlighter(QTextEdit* editor, Language language = Language::Attribulator);   // Set "Attribulator" to default language
+private:
+    // Applies formatting to each token occurrence in order.
+    // Each token is searched in the text starting from the last match position,
+    // and the corresponding color is applied if present.
+    void setColors(const QString& text, const QStringList& words, const QColorList& colors) noexcept;
 
-    Language getLanguage() const noexcept;
-    void setLanguage(Language mode) noexcept;
+private:
+    Language currentLanguage;
+    QTextEdit* editor;
 };

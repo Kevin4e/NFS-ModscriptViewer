@@ -3,9 +3,9 @@
 
 #include "ui_AboutDialog.h"
 
-AboutDialog::AboutDialog(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::AboutDialog)
+AboutDialog::AboutDialog(QWidget* parent)
+    : QDialog{ parent }
+    , ui{ new Ui::AboutDialog }
 {
     ui->setupUi(this);
     setFixedSize(size()); // Makes the window unresizable

@@ -1,28 +1,31 @@
 #include "Utils.hpp"
 
-#include <QFile>
+#include <QChar>
 #include <QString>
-#include <QTextStream>
-#include <QWidget>
+#include <QStringList>
 
-bool isFileModified(const QString& currentText, const QString& filePath, QWidget* parent) {
-    QFile file{ filePath };
+QStringList splitCommandLine(const QString& command) {
+    QStringList tokens{};
+    QString currentToken{};
+    bool insideQuotes{ false };
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return true; // Se non riesco ad aprire il file, considero che sia modificato (o gestisci l'errore come preferisci)
+    for (QChar c : command) {
+        if (c == '"') {
+            insideQuotes = !insideQuotes;
+            currentToken.append(c);
+        }
+        else if (c.isSpace() && !insideQuotes) {
+            if (!currentToken.isEmpty()) {
+                tokens.append(currentToken);
+                currentToken.clear();
+            }
+        }
+        else
+            currentToken.append(c);
+    }
 
-    QTextStream in{ &file };
-    const QString fileContent{ in.readAll() };
-    file.close();
+    if (!currentToken.isEmpty())
+        tokens.append(currentToken);
 
-    return currentText != fileContent;
-}
-
-QMessageBox::StandardButton ProceedWithUnsavedChangesUserChoice(QWidget* parent) {
-    return QMessageBox::question(
-        parent,
-        "Unsaved changes",
-        "There are unsaved changes. Are you sure you want to proceed?",
-        QMessageBox::Yes | QMessageBox::No
-    );
+    return tokens;
 }

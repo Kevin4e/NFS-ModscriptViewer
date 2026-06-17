@@ -1,5 +1,3 @@
-; Script generated and improved for Windows 10/11 file associations
-
 #include "version.iss.inc"
 
 #define MyAppName "NFS-ModscriptViewer"
