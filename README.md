@@ -22,5 +22,22 @@ Every release comes in two formats:
 
 > **Why use the installer?** The installer automatically handles desktop shortcuts and configures the Windows registry to set NFS-ModscriptViewer as the default application for `.nfsms` and `.end` file extensions.
 
+## Interfaces (v0.2.0)
+### Attribulator
+![Attribulator](NFS-ModscriptViewer/assets/attribulator.png)
+
+### Binary
+![Binary](NFS-ModscriptViewer/assets/binary.png)
+
+## Want to Contribute?
+Since the tool is in Beta, the core engine is set, but I'm always looking for mechanics to help tune it up.
+
+I'd love help with:
+- Enhancing or adding new syntax highlighting colors.
+- Optimizing the text rendering or memory usage for massive scripts.
+- Implementing missing quality-of-life features you want to see.
+
+Feel free to fork the repo, experiment, and [open a Pull Request](https://github.com/Kevin4e/NFS-ModscriptViewer/pulls).
+
 ## Credits
 * **[Kevin4e](https://github.com/Kevin4e)** - Author and developer.
